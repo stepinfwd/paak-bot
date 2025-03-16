@@ -1,87 +1,103 @@
 const { Telegraf } = require('telegraf');
 const axios = require('axios');
-const dotenv = require('dotenv').config()
+const dotenv = require('dotenv').config();
 const data = require('./data.json');
-
-
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 async function getRandomJoke () {
     try {
-        const joke = await axios.get('https://official-joke-api.appspot.com/random_joke')
-        return joke.data
+        const response = await axios.get('https://official-joke-api.appspot.com/random_joke');
+        return response.data;
     } catch (error) {
-
-        throw new Error('Unexpected error')
-        return null
+        console.error('Error fetching joke:', error.message);
+        return null;
     }
 }
 
 const SPECIAL_CHARS = [
-    '\\',
-    '_',
-    '*',
-    '[',
-    ']',
-    '(',
-    ')',
-    '~',
-    '`',
-    '>',
-    '<',
-    '&',
-    '#',
-    '+',
-    '-',
-    '=',
-    '|',
-    '{',
-    '}',
-    '.',
-    '!'
-]
+    '\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&',
+    '#', '+', '-', '=', '|', '{', '}', '.', '!'
+];
 
 const escapeMarkdown = (text) => {
-    SPECIAL_CHARS.forEach(char => (text = text.replaceAll(char, `\\${char}`)))
-    return text
-}
+    return SPECIAL_CHARS.reduce((acc, char) => acc.replaceAll(char, `\\${char}`), text);
+};
 
-bot.start((ctx) => ctx.reply('Welcome! Use /joke to get a random joke or /agorithm <name> '));
-bot.help((ctx) => ctx.reply('Use /joke to get a random joke  or /agorithm <name> .'));
+bot.start((ctx) => {
+    try {
+        ctx.reply('Welcome! Use /joke to get a random joke or /algorithm <name>.');
+    } catch (error) {
+        console.error('Error in /start:', error.message);
+        ctx.reply('Oops! Something went wrong. Try again later.');
+    }
+});
 
+bot.help((ctx) => {
+    try {
+        ctx.reply('Use /joke to get a random joke or /algorithm <name>.');
+    } catch (error) {
+        console.error('Error in /help:', error.message);
+        ctx.reply('Oops! Something went wrong. Try again later.');
+    }
+});
+
+// Joke command
 bot.command('joke', async (ctx) => {
-    const joke = await getRandomJoke();
-    if (joke) {
-        ctx.replyWithMarkdownV2(`*${escapeMarkdown(joke.setup)}*\n\n${escapeMarkdown(joke.punchline)}`);
-    } else {
-        ctx.reply('Sorry, I couldn\'t fetch a joke at the moment. Please try again later.');
+    try {
+        const joke = await getRandomJoke();
+        if (joke) {
+            ctx.replyWithMarkdownV2(`*${escapeMarkdown(joke.setup)}*\n\n${escapeMarkdown(joke.punchline)}`);
+        } else {
+            ctx.reply('Sorry, I couldn\'t fetch a joke at the moment. Please try again later.');
+        }
+    } catch (error) {
+        console.error('Error in /joke:', error.message);
+        ctx.reply('Oops! Something went wrong while fetching the joke. Try again later.');
     }
 });
 
 bot.command('algorithm', async (ctx) => {
-    const query = ctx.message.text.split(' ')[1]
-    ctx.reply(Object.keys(data.algorithms).includes(query) ? data.algorithms[query] : 'Requestion algorithm not available');
+    try {
+        const query = ctx.message.text.split(' ')[1];
+        if (!query) {
+            return ctx.reply('Please specify an algorithm name. Usage: /algorithm <name>');
+        }
+
+        if (Object.keys(data.algorithms).includes(query)) {
+            ctx.reply(data.algorithms[query]);
+        } else {
+            ctx.reply('Requested algorithm not available.');
+        }
+    } catch (error) {
+        console.error('Error in /algorithm:', error.message);
+        ctx.reply('Oops! Something went wrong while fetching the algorithm info.');
+    }
 });
 
-
-// Handle unknown commands
+// Handle unknown messages (including trolling response)
 bot.on('message', (ctx) => {
-    //made bot with nick name of friend so trolling him in malayalam
-    if (ctx.message.text.includes('paak ore mandan ane'))
-        ctx.reply('100% correct ane');
-    else
-        ctx.reply('Sorry, I don\'t understand that command. Use /joke to get a random joke  or /agorithm <name> .');
-
+    try {
+        if (ctx.message.text.includes('paak ore mandan ane')) {
+            ctx.reply('100% correct ane');
+        } else {
+            ctx.reply('Sorry, I don\'t understand that command. Use /joke or /algorithm <name>.');
+        }
+    } catch (error) {
+        console.error('Error in message handler:', error.message);
+        ctx.reply('An unexpected error occurred. Please try again later.');
+    }
 });
+
 bot.catch((err, ctx) => {
-    console.error('error---', err);
+    console.error('Bot encountered an error:', err);
     ctx.reply('An unexpected error occurred. Please try again later.');
 });
 
-
 bot.launch().then(() => {
     console.log('Bot is running...');
+}).catch((error) => {
+    console.error('Error launching bot:', error.message);
 });
 
 // Enable graceful stop
