@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "apt": "^0.0.2",
+    "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
+    "install": "^0.13.0",
+    "node-telegram-bot-api": "^0.66.0",
+    "nodejs": "^0.0.0",
+    "openai": "^4.87.3",
+    "sudo": "^1.0.3",
+    "telegraf": "^4.16.3"
+  },
+  "name": "node",
+  "version": "1.0.0",
+  "main": "sample.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

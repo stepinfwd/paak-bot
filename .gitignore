@@ -1,0 +1,35 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore environment variables
+.env
+
+# Ignore log files
+*.log
+
+# Ignore debug logs
+debug.log
+
+# Ignore npm debug logs
+npm-debug.log*
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts
+dist/
+build/
+
+# Ignore package-lock.json (optional, depending on your workflow)
+package-lock.json
+
+# Ignore yarn.lock (if you're using Yarn)
+yarn.lock
+
+# Ignore local development files
+jokes.json # If you don't want to track your local jokes file
